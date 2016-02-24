@@ -1,0 +1,172 @@
+<!--
+  Copyright 2015 mcarboni@redant.com
+
+  Licensed under the Apache License, Version 2.0 (the 'License');
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an 'AS IS' BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+<script type='text/x-red' data-template-name='typeformAPI'>
+    <div class='form-row'>
+       <label for='node-config-input-name'><i class='fa fa-tag'></i> Name</label>
+       <input type='text' id='node-config-input-name' placeholder='Name'>
+    </div>
+    <div class='form-row'>
+        <label for='node-config-input-key'><i class='fa fa-key'></i> API Key</label>
+        <input type='text' id='node-config-input-key' placeholder='API KEY'>
+    </div>
+</script>
+
+<script type='text/javascript'>
+    (function() {
+            RED.nodes.registerType('typeformAPI',{
+            category: 'config',
+            defaults: {
+                name: { value:'', required : true }
+            },
+            credentials: {
+                key: { type: 'password' }
+            },
+            label: function() {
+                return this.name||'API Key';
+            },
+            oneditsave: function () {
+                //Send the key to the server so is able to use it
+                $.ajax({
+                    url : 'typeform/'+this.id,
+                    type: 'PUT',
+                    data : {
+                        key : this.key
+                    }
+                });
+            },
+            oneditcancel: function () {
+                $.ajax({
+                    url : 'typeform/'+this.id,
+                    type: 'PUT',
+                    data : {
+                        cancelled : true
+                    }
+                });
+            }
+        });
+    })();
+</script>
+
+<script type='text/x-red' data-template-name='Typeform List'>
+    <div class='form-row'>
+       <label for='node-input-name'><i class='fa fa-tag'></i> Name</label>
+       <input type='text' id='node-input-name' placeholder='Name'>
+    </div>
+    <div class='form-row'>
+       <label for='node-input-key'><i class='fa fa-key'></i> API Key</label>
+       <input type='text' id='node-input-key' placeholder='API Key'>
+    </div>
+</script>
+
+<script type='text/x-red' data-help-name='Typeform List'>
+    <p>This node give you a list of the forms available on the account.</p>
+</script>
+
+<script type='text/javascript'>
+    (function() {
+		RED.nodes.registerType('Typeform List',{
+			category: 'social',
+			color:'#A6BBCF',
+			defaults: {
+                name: { value:'' },
+                key: { type:'typeformAPI',required:true}
+			},
+			inputs: 1,
+			outputs: 1,
+			icon: 'typeform.png',
+			label: function() {
+				return this.name||('Get typeform forms');
+			},
+			labelStyle: function() {
+				return this.name?'node_label_italic':'';
+			}
+		});
+    })();
+</script>
+
+<script type='text/x-red' data-template-name='Typeform Answers'>
+    <div class='form-row'>
+       <label for='node-input-name'><i class='fa fa-tag'></i> Name</label>
+       <input type='text' id='node-input-name' placeholder='Name'>
+    </div>
+    <div class='form-row'>
+       <label for='node-input-key'><i class='fa fa-key'></i> API Key</label>
+       <input type='text' id='node-input-key' placeholder='API Key'>
+    </div>
+	<div class='form-row' style='display:none'>
+        <label for='node-input-form'><i class='fa fa-list-alt'></i>Form</label>
+        <select id='node-input-form'></select>
+    </div>
+</script>
+
+<script type='text/x-red' data-help-name='Typeform Answers'>
+	<p>This node require the id of a form.
+	You can pass in the input message the following optional parameters :</p>
+	<ul>
+	<li>form : id of the form ( if is specified here overwrite the one in the configuration ).</li>
+	<li>since : the retrieved answers will be newer than this parameter.</li>
+	<li>until</li>
+	<li>offset</li>
+	<li>limit</li>
+	</ul>
+	<h3 id="output">Output</h3>
+	<p>This node give the answers in the following structure :</p>
+	<pre class="editor-colors lang-text"><div class="line"><span class="text plain"><span>&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="meta paragraph text"><span>http_status</span></span></span></div><div class="line"><span class="text plain"><span class="meta paragraph text"><span>&nbsp;&nbsp;&nbsp;&nbsp;stats</span></span></span></div><div class="line"><span class="text plain"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="meta paragraph text"><span>responses</span></span></span></div><div class="line"><span class="text plain"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="meta paragraph text"><span>showing</span></span></span></div><div class="line"><span class="text plain"><span class="meta paragraph text"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;total</span></span></span></div><div class="line"><span class="text plain"><span class="meta paragraph text"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;completed</span></span></span></div><div class="line"><span class="text plain"><span>&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="meta paragraph text"><span>questions</span></span></span></div><div class="line"><span class="text plain"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="meta paragraph text"><span>[</span></span></span></div><div class="line"><span class="text plain"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="meta paragraph text"><span>id</span></span></span></div><div class="line"><span class="text plain"><span class="meta paragraph text"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;question</span></span></span></div><div class="line"><span class="text plain"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="meta paragraph text"><span>]</span></span></span></div><div class="line"><span class="text plain"><span>&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="meta paragraph text"><span>responses</span></span></span></div><div class="line"><span class="text plain"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="meta paragraph text"><span>[</span></span></span></div><div class="line"><span class="text plain"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="meta paragraph text"><span>id</span></span></span></div><div class="line"><span class="text plain"><span class="meta paragraph text"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;metadata</span></span></span></div><div class="line"><span class="text plain"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="meta paragraph text"><span>data_land</span></span></span></div><div class="line"><span class="text plain"><span class="meta paragraph text"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;date_submit</span></span></span></div><div class="line"><span class="text plain"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="meta paragraph text"><span>hidden</span></span></span></div><div class="line"><span class="text plain"><span class="meta paragraph text"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[</span></span></span></div><div class="line"><span class="text plain"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="meta paragraph text"><span>---&nbsp;your&nbsp;hidden&nbsp;params&nbsp;---</span></span></span></div><div class="line"><span class="text plain"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="meta paragraph text"><span>]</span></span></span></div><div class="line"><span class="text plain"><span class="meta paragraph text"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;answers</span></span></span></div><div class="line"><span class="text plain"><span class="meta paragraph text"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[</span></span></span></div><div class="line"><span class="text plain"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="meta paragraph text"><span>---&nbsp;your&nbsp;asnwers&nbsp;(&nbsp;in&nbsp;raw&nbsp;format&nbsp;)&nbsp;---</span></span></span></div><div class="line"><span class="text plain"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="meta paragraph text"><span>]</span></span></span></div><div class="line"><span class="text plain"><span class="meta paragraph text"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;getAnswerByQuestion()</span></span></span></div><div class="line"><span class="text plain"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="meta paragraph text"><span>]</span></span></span></div></pre><p>You can easily iterate over responses, for each response is available the function <em>getAnswerByQuestion</em>, you can obtain what the user reply to a question using</p>
+	<pre class="editor-colors lang-text"><div class="line"><span class="text plain"><span class="meta paragraph text"><span>var&nbsp;choices&nbsp;=&nbsp;response.getAnswerByQuestion(&#39;How&nbsp;was&nbsp;your&nbsp;breakfast?&#39;);</span></span></span></div></pre><p>The function outputs an array, this is in the case the question have multiple choices, or have an &quot;other&quot; choice ( in this case the first value of the array is an empty string and the second one is what the user write on &quot;other&quot; ).</p>
+</script>
+
+<script type='text/javascript'>
+    (function() {
+		RED.nodes.registerType('Typeform Answers',{
+			category: 'social',
+			color:'#A6BBCF',
+			defaults: {
+                name: { value:'' },
+                key: { type:'typeformAPI',required:true},
+                form: { value:'' },
+                formFriendlyName: { value:'' },
+			},
+			inputs: 1,
+			outputs: 1,
+			icon: 'typeform.png',
+			label: function() {
+				return this.name||('Get '+this.formFriendlyName);
+			},
+			labelStyle: function() {
+				return this.name?'node_label_italic':'';
+			},
+			oneditprepare: function() {
+                var node = this;
+                console.log(node);
+                $('#node-input-require-all').prop('checked', this.requireAll);
+                $('#node-input-sqldb').change(function () {
+                    var val = $(this).val();
+                    if ( val !== '__ADD__' ) {
+                        sqlDbListTables(val,node.table);
+                    }
+                });
+                if ( node.sqldb ) {
+                    sqlDbListTables(node.sqldb,node.table);
+                }
+				$('#node-input-name').focus();
+            },
+			oneditsave: function() {
+				this.requireAll = $( '#node-input-require-all' ).prop( 'checked' ) + 0;
+			}
+		});
+    })();
+</script>

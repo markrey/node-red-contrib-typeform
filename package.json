@@ -1,0 +1,33 @@
+{
+  "name": "node-red-contrib-typeform",
+  "version": "0.1.0",
+  "description": "A Node-RED Node for calling the typeform api",
+  "dependencies": {
+    "request": "^2.69.0"
+  },
+  "license": "Apache-2.0",
+  "keywords": [
+    "node-red",
+    "typeform",
+    "api",
+    "redconnect"
+  ],
+  "node-red": {
+    "nodes": {
+      "Typeform": "typeform.js"
+    }
+  },
+  "author": "Maurizio Carboni <mcarboni@redant.com>",
+  "contributors": [
+    "Maurizio Carboni <mcarboni@redant.com>"
+  ],
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/redconnect-io/node-red-contrib-typeform.git"
+  },
+  "bugs": {
+    "url": "https://github.com/redconnect-io/node-red-contrib-typeform/issues"
+  },
+  "homepage": "https://github.com/redconnect-io/node-red-contrib-typeform#readme"
+}
